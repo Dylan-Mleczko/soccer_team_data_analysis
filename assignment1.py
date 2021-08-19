@@ -7,6 +7,7 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+import json
 
 # You should use these two variable to refer the location of the JSON data file and the folder containing the news articles.
 # Under no circumstances should you hardcode a path to the folder on your computer (e.g. C:\Chris\Assignment\data\data.json) as this path will not exist on any machine but yours.
@@ -14,8 +15,9 @@ datafilepath = 'data/data.json'
 articlespath = 'data/football'
 
 def task1():
-    #Complete task 1 here
-    return
+    with open(datafilepath) as file:
+        data = json.load(file)
+    return sorted(data["teams_codes"])
     
 def task2():
     #Complete task 2 here
