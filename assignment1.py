@@ -20,7 +20,13 @@ def task1():
     return sorted(data["teams_codes"])
     
 def task2():
-    #Complete task 2 here
+    with open(datafilepath) as file:
+        data = json.load(file)
+    club_data = {}
+    for club in data["clubs"]:
+        club_data[club["club_code"]] = [club["goals_scored"], club["goals_conceded"]]
+    csv_data = pd.DataFrame.from_dict(club_data, orient = "index", columns = ["goals_scored_by_team", "goals_scored_against_team"])
+    csv_data.sort_index().to_csv("task2.csv", index_label = "club_code")
     return
       
 def task3():
