@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import json
+import os
+import re
 
 # You should use these two variable to refer the location of the JSON data file and the folder containing the news articles.
 # Under no circumstances should you hardcode a path to the folder on your computer (e.g. C:\Chris\Assignment\data\data.json) as this path will not exist on any machine but yours.
@@ -30,7 +32,18 @@ def task2():
     return
       
 def task3():
-    #Complete task 3 here
+    total_scores = {}
+    for file in [file for file in os.listdir(articlespath) if ".txt" in file]:
+        with open(articlespath + "/" + file) as article:
+            scores = re.findall(r"(\d+)-(\d+)", article.read())
+            largest_score = 0
+        for score in [score for score in scores if len(score[0]) <= 2 and len(score[1]) <= 2]:
+            score = int(score[0]) + int(score[1])
+            if score > largest_score:
+                largest_score = score
+        total_scores[file] = largest_score
+    csv_data = pd.DataFrame.from_dict(total_scores, orient = "index", columns = ["total_goals"])
+    csv_data.sort_index().to_csv("task3.csv", index_label = "filename")
     return
 
 def task4():
