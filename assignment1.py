@@ -47,7 +47,10 @@ def task3():
     return
 
 def task4():
-    #Complete task 4 here
+    plt.boxplot(pd.read_csv("task3.csv")["total_goals"])
+    plt.title("Distribution of Total Goals from Soccer Matches")
+    plt.xticks([])
+    plt.savefig("task4")
     return
     
 def task5():
