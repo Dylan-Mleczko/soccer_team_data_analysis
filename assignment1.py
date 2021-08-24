@@ -1,9 +1,3 @@
-# This is the file you will need to edit in order to complete assignment 1
-# You may create additional functions, but all code must be contained within this file
-
-
-# Some starting imports are provided, these will be accessible by all functions.
-# You may need to import additional items
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -11,8 +5,6 @@ import json
 import os
 import re
 
-# You should use these two variable to refer the location of the JSON data file and the folder containing the news articles.
-# Under no circumstances should you hardcode a path to the folder on your computer (e.g. C:\Chris\Assignment\data\data.json) as this path will not exist on any machine but yours.
 datafilepath = 'data/data.json'
 articlespath = 'data/football'
 
@@ -50,11 +42,28 @@ def task4():
     plt.boxplot(pd.read_csv("task3.csv")["total_goals"])
     plt.title("Distribution of Total Goals from Soccer Matches")
     plt.xticks([])
-    plt.savefig("task4")
+    plt.savefig("task4.png")
     return
     
 def task5():
-    #Complete task 5 here
+    club_mentions = {}
+    with open(datafilepath) as file:
+        for club in json.load(file)["participating_clubs"]:
+            club_mentions[club] = 0
+    for file in [file for file in os.listdir(articlespath) if ".txt" in file]:
+        with open(articlespath + "/" + file) as article:
+            article = article.read()
+            for club in club_mentions:
+                club_mentions[club] += club in article
+    csv_data = pd.DataFrame.from_dict(club_mentions, orient = "index", columns = ["number_of_mentions"])
+    csv_data.sort_index().to_csv("task5.csv", index_label = "club_name")
+    csv_data = pd.read_csv("task5.csv")
+    plt.bar(csv_data["club_name"], csv_data["number_of_mentions"])
+    plt.title("Soccer Club Mentions in Media")
+    plt.xlabel("Club Name")
+    plt.ylabel("Number of Articles Mentioning Club at Least Once")
+    plt.xticks(rotation = 90)
+    plt.savefig("task5.png", bbox_inches = "tight")
     return
     
 def task6():
