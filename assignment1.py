@@ -61,9 +61,9 @@ def task5():
     csv_data.to_csv("task5.csv", index_label = "club_name")
     csv_data = pd.read_csv("task5.csv")
     plt.bar(csv_data["club_name"], csv_data["number_of_mentions"])
-    plt.title("Soccer Club Mentions in Media")
-    plt.xlabel("Club Name")
-    plt.ylabel("Number of Articles Mentioning Club at Least Once")
+    plt.title("Soccer Team Mentions in Media")
+    plt.xlabel("Team Name")
+    plt.ylabel("Number of Articles Mentioning Team at Least Once")
     plt.xticks(rotation = 90)
     plt.savefig("task5.png", bbox_inches = "tight")
     return
@@ -91,13 +91,17 @@ def task6():
             elif single_club_mentions[i] + single_club_mentions[j] > 0:
                 similarity_scores[i][j] = similarity_scores[j][i] = (2 * pair_club_mentions[i][j]) / (single_club_mentions[i] + single_club_mentions[j])
     similarity_scores_dataframe = pd.DataFrame(similarity_scores, index = clubs, columns = clubs).sort_index(axis = 0).sort_index(axis = 1)
-    sns.heatmap(similarity_scores_dataframe, cbar_kws = {"label": "Similarity Score of Club Pair"}, cmap = "rainbow")
-    plt.title("Similarity in Media Mentions between Soccer Clubs")
+    sns.heatmap(similarity_scores_dataframe, cbar_kws = {"label": "Similarity Score of Team Pair"}, cmap = "rainbow")
+    plt.title("Similarity in Media Mentions between Soccer Teams")
     plt.savefig("task6.png", bbox_inches = "tight")
     return
     
 def task7():
-    #Complete task 7 here
+    plt.scatter(pd.read_csv("task5.csv")["number_of_mentions"], pd.read_csv("task2.csv")["goals_scored_by_team"])
+    plt.title("Correlation between Soccer Team Mentions in Media and Goals")
+    plt.xlabel("Number of Articles Mentioning Team at Least Once")
+    plt.ylabel("Number of Total Goals Scored by Team")
+    plt.savefig("task7.png")
     return
     
 def task8(filename):
