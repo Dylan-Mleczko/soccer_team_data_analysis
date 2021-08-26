@@ -1,5 +1,6 @@
 import json
 from matplotlib import pyplot as plt
+import nltk
 import numpy as np
 import os
 import pandas as pd
@@ -105,8 +106,10 @@ def task7():
     return
     
 def task8(filename):
-    #Complete task 8 here
-    return
+    with open(filename) as file:
+        article = file.read()
+    article = re.sub(r"[^A-Za-z]+", " ", article)
+    return [word for word in nltk.word_tokenize(article.lower()) if (word not in nltk.corpus.stopwords.words("english")) and (len(word) > 1)]
     
 def task9():
     #Complete task 9 here
