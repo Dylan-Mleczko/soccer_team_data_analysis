@@ -6,6 +6,7 @@ import os
 import pandas as pd
 import re
 import seaborn as sns
+from sklearn.feature_extraction.text import TfidfTransformer
 
 datafilepath = 'data/data.json'
 articlespath = 'data/football'
@@ -27,17 +28,17 @@ def task2():
       
 def task3():
     total_scores = {}
-    for file in [file for file in os.listdir(articlespath) if ".txt" in file]:
+    for file in [file for file in os.listdir(articlespath) if file.endswith(".txt")]:
         with open(articlespath + "/" + file) as article:
-            scores = re.findall(r"(\d+)-(\d+)", article.read())
-            largest_score = 0
+            article = article.read()    
+        scores = re.findall(r"(\d+)-(\d+)", article)
+        largest_score = 0
         for score in [score for score in scores if len(score[0]) <= 2 and len(score[1]) <= 2]:
             score = int(score[0]) + int(score[1])
             if score > largest_score:
                 largest_score = score
         total_scores[file] = largest_score
-    csv_data = pd.DataFrame.from_dict(total_scores, orient = "index", columns = ["total_goals"]).sort_index()
-    csv_data.to_csv("task3.csv", index_label = "filename")
+    pd.DataFrame.from_dict(total_scores, orient = "index", columns = ["total_goals"]).sort_index().to_csv("task3.csv", index_label = "filename")
     return
 
 def task4():
@@ -53,13 +54,12 @@ def task5():
     club_mentions = {}
     for club in clubs:
         club_mentions[club] = 0
-    for file in [file for file in os.listdir(articlespath) if ".txt" in file]:
+    for file in [file for file in os.listdir(articlespath) if file.endswith(".txt")]:
         with open(articlespath + "/" + file) as article:
             article = article.read()
-            for club in clubs:
-                club_mentions[club] += club in article
-    csv_data = pd.DataFrame.from_dict(club_mentions, orient = "index", columns = ["number_of_mentions"]).sort_index()
-    csv_data.to_csv("task5.csv", index_label = "club_name")
+        for club in clubs:
+            club_mentions[club] += club in article
+    pd.DataFrame.from_dict(club_mentions, orient = "index", columns = ["number_of_mentions"]).sort_index().to_csv("task5.csv", index_label = "club_name")
     csv_data = pd.read_csv("task5.csv")
     plt.bar(csv_data["club_name"], csv_data["number_of_mentions"])
     plt.title("Soccer Team Mentions in Media")
@@ -75,16 +75,16 @@ def task6():
     single_club_mentions = [0 for i in range(len(clubs))]
     pair_club_mentions = [len(clubs) * [0] for i in range(len(clubs))]
     similarity_scores = [len(clubs) * [0] for i in range(len(clubs))]
-    for file in [file for file in os.listdir(articlespath) if ".txt" in file]:
+    for file in [file for file in os.listdir(articlespath) if file.endswith(".txt")]:
         with open(articlespath + "/" + file) as article:
             article = article.read()
-            for i in range(len(clubs)):
-                if clubs[i] in article:
-                    single_club_mentions[i] += 1
-                    for j in range(i + 1, len(clubs)):
-                        if clubs[j] in article:
-                            pair_club_mentions[i][j] += 1
-                            pair_club_mentions[j][i] += 1
+        for i in range(len(clubs)):
+            if clubs[i] in article:
+                single_club_mentions[i] += 1
+                for j in range(i + 1, len(clubs)):
+                    if clubs[j] in article:
+                        pair_club_mentions[i][j] += 1
+                        pair_club_mentions[j][i] += 1
     for i in range(len(clubs)):
         for j in range(len(clubs)):
             if i == j:
@@ -108,9 +108,24 @@ def task7():
 def task8(filename):
     with open(filename) as file:
         article = file.read()
-    article = re.sub(r"[^A-Za-z]+", " ", article)
-    return [word for word in nltk.word_tokenize(article.lower()) if (word not in nltk.corpus.stopwords.words("english")) and (len(word) > 1)]
+    return [word for word in nltk.word_tokenize(re.sub(r"[^A-Za-z]+", " ", article.lower())) if (word not in nltk.corpus.stopwords.words("english")) and (len(word) > 1)]
     
 def task9():
-    #Complete task 9 here
+    transformer = TfidfTransformer()
+    article_names = [file for file in sorted(os.listdir(articlespath)) if ".txt" in file]
+    articles = [task8(articlespath + "/" + article) for article in article_names]
+    terms = []
+    for article_terms in articles:
+        terms += article_terms
+    terms = sorted(list(set(terms)))
+    term_counts = [len(terms) * [0] for i in range(len(articles))]
+    for i in range(len(articles)):
+        for word in articles[i]:
+            term_counts[i][terms.index(word)] += 1
+    tfidf = transformer.fit_transform(term_counts).toarray()
+    similarity_scores = []
+    for i in range(len(article_names)):
+        for j in range(i + 1, len(article_names)):
+            similarity_scores += [[article_names[i], article_names[j], np.dot(tfidf[i], tfidf[j]) / (np.linalg.norm(tfidf[i]) * np.linalg.norm(tfidf[j]))]]
+    pd.DataFrame(similarity_scores, columns = ["article1", "article2", "similarity"]).nlargest(10, "similarity").to_csv("task9.csv", index = False)
     return
