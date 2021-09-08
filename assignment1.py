@@ -48,7 +48,7 @@ def task4():
     plt.xticks([])
     plt.yticks(range(0, 101, 10))
     plt.grid(True, which = "major", axis = "y")
-    plt.savefig("task4.png")
+    plt.savefig("task4.png", bbox_inches = "tight")
     plt.clf()
     return
     
@@ -68,7 +68,7 @@ def task5():
     plt.bar(csv_data["club_name"], csv_data["number_of_mentions"])
     plt.title("Mentions for Soccer Teams in Articles", fontweight = "bold")
     plt.xlabel("Team", fontweight = "bold")
-    plt.ylabel("Number of Articles Mentioning Team at Least Once", fontweight = "bold")
+    plt.ylabel("Articles Mentioning Team at Least Once", fontweight = "bold")
     plt.xticks(rotation = 90)
     plt.yticks(range(0, 91, 10))
     plt.grid(True, which = "major", axis = "y")
@@ -98,19 +98,27 @@ def task6():
             elif single_team_mentions[i] + single_team_mentions[j] > 0:
                 similarity_scores[i][j] = (2 * pair_team_mentions[i][j]) / (single_team_mentions[i] + single_team_mentions[j])
     dataframe = pd.DataFrame(similarity_scores, index = teams, columns = teams).sort_index(axis = 0).sort_index(axis = 1)
-    sns.heatmap(dataframe, cbar_kws = {"label": "Team Pair Similarity Score"}, cmap = "rainbow")
+    sns.heatmap(dataframe, cbar_kws = {"label": "Team Pair Similarity Score", "ticks": np.arange(0, 1.1, 0.1)}, cmap = "rainbow")
     plt.title("Similarity of Article Mentions between Soccer Teams", fontweight = "bold")
     plt.savefig("task6.png", bbox_inches = "tight")
     plt.clf()
     return
     
 def task7():
-    plt.scatter(pd.read_csv("task5.csv")["number_of_mentions"], pd.read_csv("task2.csv")["goals_scored_by_team"])
-    plt.title("Relationship between Mentions of Soccer Teams in Articles and Goals Scored", fontweight = "bold")
-    plt.xlabel("Number of Articles Mentioning Team at Least Once", fontweight = "bold")
-    plt.ylabel("Number of Total Goals Scored by Team", fontweight = "bold")
-    plt.xticks(range(0, 101, 10))
-    plt.yticks(range(0, 13, 1))
+    with open(datafilepath) as file:
+        team_data = json.load(file)["clubs"]
+    team_name_codes = {}
+    for team in team_data:
+        team_name_codes[team["name"]] = team["club_code"]
+    task5_csv_data = pd.read_csv("task5.csv")
+    for row in range(len(task5_csv_data)):
+        task5_csv_data.loc[row, "club_name"] = team_name_codes[task5_csv_data.loc[row, "club_name"]]
+    plt.scatter(pd.read_csv("task2.csv")["goals_scored_by_team"], task5_csv_data.sort_values(by = "club_name")["number_of_mentions"])
+    plt.title("Relationship between Goals Scored by Soccer Teams and Mentions in Articles", fontweight = "bold")
+    plt.xlabel("Total Goals Scored by Team", fontweight = "bold")
+    plt.ylabel("Articles Mentioning Team at Least Once", fontweight = "bold")
+    plt.xticks(range(0, 13, 1))
+    plt.yticks(range(0, 101, 10))
     plt.grid(True)
     plt.savefig("task7.png", bbox_inches = "tight")
     plt.clf()
